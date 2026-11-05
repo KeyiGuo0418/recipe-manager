@@ -60,42 +60,54 @@ namespace RecipeManagement.Core
 
         public void AddIngredientsToShoppingList(IEnumerable<Ingredient> ingredients)
         {
-            throw new NotImplementedException();
+            if (ingredients == null) return;
+            _shoppingList.AddRange(ingredients);
         }
 
         public List<Ingredient> GetShoppingList()
         {
-            throw new NotImplementedException();
+            return new List<Ingredient>(_shoppingList);
         }
 
         public void ClearShoppingList()
         {
-            throw new NotImplementedException();
+            _shoppingList.Clear();
         }
 
         public bool AddRecipeToCookingPlan(Guid recipeId)
         {
-            throw new NotImplementedException();
+            if (!_recipes.TryGetValue(recipeId, out var recipe))
+                return false;
+            _cookingPlan.AddLast(recipe);
+            return true;
         }
 
         public bool RemoveRecipeFromCookingPlan()
         {
-            throw new NotImplementedException();
+            if (_cookingPlan.Count == 0) return false;
+            var last = _cookingPlan.Last!.Value;
+            _cookingPlan.RemoveLast();
+            _removedRecipeUndoStack.Push(last);
+            return true;
         }
 
         public Recipe? PeekLastRemovedRecipe()
         {
-            throw new NotImplementedException();
+            if (_removedRecipeUndoStack.Count == 0) return null;
+            return _removedRecipeUndoStack.Peek();
         }
 
         public bool RestoreLastRemovedRecipe()
         {
-            throw new NotImplementedException();
+            if (_removedRecipeUndoStack.Count == 0) return false;
+            var rec = _removedRecipeUndoStack.Pop();
+            _cookingPlan.AddLast(rec);
+            return true;
         }
 
         public List<Recipe> GetCookingPlan()
         {
-            throw new NotImplementedException();
+            return new List<Recipe>(_cookingPlan);
         }
 
         public bool StartCooking(Guid recipeId)
@@ -144,3 +156,4 @@ namespace RecipeManagement.Core
         }
     }
 }
+
