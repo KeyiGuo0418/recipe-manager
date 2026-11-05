@@ -7,32 +7,55 @@ namespace RecipeManagement.Core
 {
     public class RecipeManager : IRecipeManager
     {
-        public int RecipeCount { get; }
-        public int ShoppingListItemCount { get; }
-        public int CookingPlanCount { get; }
-        public int InstructionQueueCount { get; }
+        private readonly Dictionary<Guid, Recipe> _recipes;
+        private readonly List<Ingredient> _shoppingList;
+        private readonly LinkedList<Recipe> _cookingPlan;
+        private readonly Stack<Recipe> _removedRecipeUndoStack;
+        private readonly Queue<Instruction> _cookingInstructionQueue;
+
+        public int RecipeCount => _recipes.Count;
+        public int ShoppingListItemCount => _shoppingList.Count;
+        public int CookingPlanCount => _cookingPlan.Count;
+        public int InstructionQueueCount => _cookingInstructionQueue.Count;
 
         public RecipeManager()
         {
+            _recipes = new Dictionary<Guid, Recipe>();
+            _shoppingList = new List<Ingredient>();
+            _cookingPlan = new LinkedList<Recipe>();
+            _removedRecipeUndoStack = new Stack<Recipe>();
+            _cookingInstructionQueue = new Queue<Instruction>();
         }
 
-        public RecipeManager(IEnumerable<Recipe> initialRecipes)
+        public RecipeManager(IEnumerable<Recipe> initialRecipes) : this()
         {
+            if (initialRecipes == null) return;
+            foreach (var r in initialRecipes)
+            {
+                if (!_recipes.ContainsKey(r.Id))
+                {
+                    _recipes[r.Id] = r;
+                }
+            }
         }
 
         public bool AddRecipe(Recipe recipe)
         {
-            throw new NotImplementedException();
+            if (recipe == null) return false;
+            if (_recipes.ContainsKey(recipe.Id)) return false;
+            _recipes[recipe.Id] = recipe;
+            return true;
         }
 
         public Recipe? FindRecipe(Guid id)
         {
-            throw new NotImplementedException();
+            _recipes.TryGetValue(id, out var found);
+            return found;
         }
 
         public bool RemoveRecipe(Guid id)
         {
-            throw new NotImplementedException();
+            return _recipes.Remove(id);
         }
 
         public void AddIngredientsToShoppingList(IEnumerable<Ingredient> ingredients)
@@ -90,7 +113,6 @@ namespace RecipeManagement.Core
             throw new NotImplementedException();
         }
 
-        // Part B methods, leave untouched for now
         public List<Recipe> SearchByName(string keyword)
         {
             throw new NotImplementedException();
@@ -122,4 +144,3 @@ namespace RecipeManagement.Core
         }
     }
 }
-
